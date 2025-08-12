@@ -8,19 +8,38 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
 // Check if Supabase is configured
-const isSupabaseConfigured = SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY;
+const isSupabaseConfigured = SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY &&
+  SUPABASE_URL !== "" && SUPABASE_PUBLISHABLE_KEY !== "";
 
 if (!isSupabaseConfigured) {
   console.warn('⚠️ Supabase not configured. Authentication features will be disabled.');
 }
 
+// Create a mock Supabase client for when not configured
+const createMockSupabaseClient = () => {
+  const mockAuth = {
+    getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+    signInWithPassword: () => Promise.resolve({ data: { user: null, session: null }, error: new Error('Authentication disabled') }),
+    signUp: () => Promise.resolve({ data: { user: null, session: null }, error: new Error('Authentication disabled') }),
+    signOut: () => Promise.resolve({ error: null }),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
+  };
+
+  return {
+    auth: mockAuth,
+    from: () => ({
+      select: () => Promise.resolve({ data: null, error: new Error('Database disabled') }),
+      insert: () => Promise.resolve({ data: null, error: new Error('Database disabled') }),
+      update: () => Promise.resolve({ data: null, error: new Error('Database disabled') }),
+      delete: () => Promise.resolve({ data: null, error: new Error('Database disabled') })
+    })
+  };
+};
+
 // Create a safe Supabase client that won't crash if not configured
 export const supabase = isSupabaseConfigured
   ? createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
-  : createClient<Database>('https://placeholder.supabase.co', 'placeholder-key', {
-      auth: { persistSession: false },
-      realtime: { params: { eventsPerSecond: 0 } }
-    });
+  : createMockSupabaseClient() as any;
 
 // Export configuration status for components to check
 export const isSupabaseEnabled = isSupabaseConfigured;
