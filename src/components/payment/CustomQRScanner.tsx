@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Check, AlertCircle, Scan, Timer, RefreshCw, Copy, CheckCircle, MessageCircle } from 'lucide-react';
-import WhatsAppButton from '@/components/ui/WhatsAppButton';
+import { Check, AlertCircle, Scan, Timer, RefreshCw, Copy, CheckCircle, MessageCircle } from 'lucide-react';
 
 interface CustomQRScannerProps {
   amount: number;
@@ -21,68 +20,50 @@ const CustomQRScanner = ({ amount, onPaymentComplete }: CustomQRScannerProps) =>
 
   // Function to generate WhatsApp message with all order details
   const generateWhatsAppMessage = () => {
-    try {
-      const customerInfo = JSON.parse(localStorage.getItem('checkoutFormData') || '{}');
-      const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+    const customerInfo = JSON.parse(localStorage.getItem('checkoutFormData') || '{}');
+    const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
 
-      console.log('🔍 QR Scanner - Customer Info:', customerInfo);
-      console.log('🔍 QR Scanner - Cart Items:', cartItems);
+    let message = `🛍️ *NEW ORDER FROM GLOW24 ORGANICS*\n\n`;
+    message += `📋 *Order ID:* ${Date.now()}\n\n`;
 
-      let message = `🛍️ *NEW ORDER FROM GLOW24 ORGANICS*\n\n`;
-      message += `📋 *Order ID:* ${Date.now()}\n\n`;
+    // Customer Details
+    message += `👤 *CUSTOMER DETAILS:*\n`;
+    message += `Name: ${customerInfo.name || 'Not provided'}\n`;
+    message += `Email: ${customerInfo.email || 'Not provided'}\n`;
+    message += `Phone: ${customerInfo.phone || 'Not provided'}\n\n`;
 
-      // Customer Details
-      message += `👤 *CUSTOMER DETAILS:*\n`;
-      message += `Name: ${customerInfo.name || 'Not provided'}\n`;
-      message += `Email: ${customerInfo.email || 'Not provided'}\n`;
-      message += `Phone: ${customerInfo.phone || 'Not provided'}\n\n`;
+    // Shipping Address
+    message += `📍 *SHIPPING ADDRESS:*\n`;
+    message += `${customerInfo.address || 'Not provided'}\n`;
+    message += `City: ${customerInfo.city || 'Not provided'}\n`;
+    message += `State: ${customerInfo.state || 'Not provided'}\n`;
+    message += `Pincode: ${customerInfo.pincode || 'Not provided'}\n\n`;
 
-      // Shipping Address
-      message += `📍 *SHIPPING ADDRESS:*\n`;
-      message += `${customerInfo.address || 'Not provided'}\n`;
-      message += `City: ${customerInfo.city || 'Not provided'}\n`;
-      message += `State: ${customerInfo.state || 'Not provided'}\n`;
-      message += `Pincode: ${customerInfo.pincode || 'Not provided'}\n\n`;
+    // Order Items
+    message += `🛒 *ORDER ITEMS:*\n`;
+    if (cartItems.length > 0) {
+      cartItems.forEach((item: any, index: number) => {
+        message += `${index + 1}. ${item.name}\n`;
+        message += `   Quantity: ${item.quantity}\n`;
+        message += `   Price: ₹${item.price}\n`;
+        message += `   Subtotal: ₹${item.price * item.quantity}\n\n`;
+      });
+    }
 
-      // Order Items
-      message += `🛒 *ORDER ITEMS:*\n`;
-      if (cartItems.length > 0) {
-        cartItems.forEach((item: any, index: number) => {
-          message += `${index + 1}. ${item.name || 'Product'}\n`;
-          message += `   Quantity: ${item.quantity || 1}\n`;
-          message += `   Price: ₹${item.price || 0}\n`;
-          message += `   Subtotal: ₹${(item.price || 0) * (item.quantity || 1)}\n\n`;
-        });
-      } else {
-        message += `No items found in cart\n\n`;
-      }
+    // Order Total
+    message += `💰 *ORDER TOTAL: ₹${amount}*\n\n`;
 
-      // Order Total
-      message += `💰 *ORDER TOTAL: ₹${amount || 0}*\n\n`;
-
-      // Payment Method
-      message += `💳 *Payment Method:* UPI/Online Payment\n`;
-      if (transactionId) {
-        message += `💳 *Transaction ID:* ${transactionId}\n\n`;
-      } else {
-        message += `💳 *Status:* Payment verification pending\n\n`;
-      }
+    // Payment Method
+    message += `💳 *Payment Method:* UPI/Online Payment\n\n`;
 
     // Additional Info
     message += `📅 *Order Date:* ${new Date().toLocaleDateString('en-IN')}\n`;
     message += `⏰ *Order Time:* ${new Date().toLocaleTimeString('en-IN')}\n\n`;
 
-      message += `✅ *Please confirm this order and provide delivery timeline.*\n\n`;
-      message += `Thank you for choosing Glow24 Organics! 🌿`;
+    message += `✅ *Please confirm this order and provide delivery timeline.*\n\n`;
+    message += `Thank you for choosing Glow24 Organics! 🌿`;
 
-      console.log('📱 Generated QR WhatsApp message:', message);
-      return encodeURIComponent(message);
-    } catch (error) {
-      console.error('❌ Error generating QR WhatsApp message:', error);
-      // Fallback message
-      const fallbackMessage = `🛍️ *NEW ORDER FROM GLOW24 ORGANICS*\n\nOrder ID: ${Date.now()}\nTotal: ₹${amount || 0}\nPayment: UPI/Online\n\nPlease confirm this order. Thank you! 🌿`;
-      return encodeURIComponent(fallbackMessage);
-    }
+    return encodeURIComponent(message);
   };
 
   useEffect(() => {

@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
-import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Checkout from "./pages/Checkout";
@@ -21,22 +20,18 @@ import LipCare from "./pages/LipCare";
 import ProductsTable from "./pages/ProductsTable";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
-import PaymentTest from "./pages/PaymentTest";
-import SimpleTest from "./pages/SimpleTest";
-import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BrowserRouter>
-          <AuthProvider>
-            <CartProvider>
-              <Toaster />
-              <Sonner />
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <CartProvider>
+            <Toaster />
+            <Sonner />
             <Cart />
             <Routes>
               <Route path="/" element={<Index />} />
@@ -51,8 +46,6 @@ const App = () => (
               <Route path="/products-table" element={<ProductsTable />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/account" element={<Account />} />
-              <Route path="/payment-test" element={<PaymentTest />} />
-              <Route path="/simple-test" element={<SimpleTest />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
@@ -61,7 +54,6 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-  </ErrorBoundary>
 );
 
 export default App;
