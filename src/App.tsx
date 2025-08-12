@@ -22,6 +22,8 @@ import ProductsTable from "./pages/ProductsTable";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
 import PaymentTest from "./pages/PaymentTest";
+import SimpleTest from "./pages/SimpleTest";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient();
@@ -50,6 +52,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/account" element={<Account />} />
               <Route path="/payment-test" element={<PaymentTest />} />
+              <Route path="/simple-test" element={<SimpleTest />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

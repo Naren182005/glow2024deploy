@@ -13,6 +13,13 @@ interface OrderData {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  items: Array<{
+    id: string;
+    name: string;
+    quantity: number;
+    price: number;
+  }>;
+  totalAmount: number;
 }
 import { 
   storeOrderInfoLocally,

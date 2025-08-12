@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, LogOut, User, ShoppingBag } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { isSupabaseEnabled } from '@/integrations/supabase/client';
 import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from '@/components/ui/table';
 
 const Account = () => {
@@ -13,35 +13,33 @@ const Account = () => {
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
+    // If Supabase is disabled, show message and redirect
+    if (!isSupabaseEnabled) {
+      navigate('/', { replace: true });
+      return;
+    }
+
     // Redirect if not logged in
     if (!user) {
       navigate('/auth', { state: { from: '/account' } });
       return;
     }
-    
-    // Fetch user orders
-    const fetchOrders = async () => {
+
+    // Load orders from localStorage instead of Supabase
+    const loadLocalOrders = () => {
       try {
-        const { data, error } = await supabase
-          .from('orders')
-          .select(`
-            *,
-            order_items(*)
-          `)
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        setOrders(data || []);
+        const storedOrders = localStorage.getItem('userOrders');
+        const orderHistory = storedOrders ? JSON.parse(storedOrders) : [];
+        setOrders(orderHistory);
       } catch (error) {
-        console.error('Error fetching orders:', error);
+        console.error('Error loading local orders:', error);
+        setOrders([]);
       } finally {
         setIsLoading(false);
       }
     };
-    
-    fetchOrders();
+
+    loadLocalOrders();
   }, [user, navigate]);
   
   const formatDate = (dateString: string) => {
