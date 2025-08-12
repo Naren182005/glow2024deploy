@@ -164,6 +164,83 @@ export const getRazorpayKey = (): string => {
   return 'rzp_live_simulated_key';
 };
 
+// Enhanced transaction validation
+export const validateTransactionId = async (
+  transactionId: string,
+  expectedAmount: number
+): Promise<{ success: boolean; message: string; data?: any }> => {
+  try {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Enhanced validation patterns for different payment gateways
+    const validationPatterns = {
+      razorpay: /^pay_[A-Za-z0-9]{14}$/,
+      paytm: /^[0-9]{12,16}$/,
+      phonepe: /^T[0-9]{10,15}$/,
+      gpay: /^[A-Z0-9]{8,20}$/,
+      generic: /^[A-Za-z0-9]{6,25}$/
+    };
+
+    const txnId = transactionId.trim().toUpperCase();
+
+    // Check if transaction ID matches any known pattern
+    const isValidFormat = Object.values(validationPatterns).some(pattern =>
+      pattern.test(txnId)
+    );
+
+    if (!isValidFormat) {
+      return {
+        success: false,
+        message: 'Invalid transaction ID format. Please check and try again.'
+      };
+    }
+
+    // Simulate different scenarios based on transaction ID
+    if (txnId.startsWith('FAIL') || txnId.startsWith('ERROR')) {
+      return {
+        success: false,
+        message: 'Transaction verification failed. Payment not found.'
+      };
+    }
+
+    if (txnId.startsWith('PENDING')) {
+      return {
+        success: false,
+        message: 'Transaction is still pending. Please wait and try again.'
+      };
+    }
+
+    // Simulate successful verification
+    return {
+      success: true,
+      message: 'Payment verified successfully',
+      data: {
+        transactionId: txnId,
+        amount: expectedAmount,
+        status: 'completed',
+        timestamp: new Date().toISOString(),
+        gateway: detectPaymentGateway(txnId)
+      }
+    };
+
+  } catch (error) {
+    console.error('Transaction validation error:', error);
+    return {
+      success: false,
+      message: 'Unable to verify payment. Please try again or contact support.'
+    };
+  }
+};
+
+// Detect payment gateway from transaction ID pattern
+const detectPaymentGateway = (transactionId: string): string => {
+  if (/^pay_/.test(transactionId)) return 'Razorpay';
+  if (/^T[0-9]/.test(transactionId)) return 'PhonePe';
+  if (/^[0-9]{12,16}$/.test(transactionId)) return 'Paytm';
+  return 'UPI';
+};
+
 // Handle QR code payment
 export const handleQRCodePayment = async (
   transactionId: string,
@@ -178,18 +255,19 @@ export const handleQRCodePayment = async (
     // In a real implementation, this would generate a QR code with payment details
     console.log(`Generating QR code for transaction ${transactionId} with amount ₹${amount.toFixed(2)}`);
     console.log(`Customer: ${customerInfo.name}, ${customerInfo.phone}, ${customerInfo.email}`);
-    
+
     // Store transaction details in localStorage for the QR code scanner component to use
     localStorage.setItem('currentTransaction', JSON.stringify({
       id: transactionId,
       amount: amount,
       timestamp: new Date().toISOString(),
-      customerInfo
+      customerInfo,
+      status: 'pending'
     }));
-    
+
     // Redirect to payment page to show QR code
     window.location.href = '/payment';
-    
+
     return true;
   } catch (error) {
     console.error('QR code payment error:', error);

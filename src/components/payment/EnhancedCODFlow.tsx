@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Clock, Truck, Info, CheckCircle, Calendar, Package, User, Mail } from 'lucide-react';
+import { MapPin, Phone, Clock, Truck, Info, CheckCircle, Calendar, Package, User, Mail, MessageCircle } from 'lucide-react';
 import OrderTrackingMap from '../order/OrderTrackingMap';
 import { TrackingData } from '@/hooks/useOrderTracking';
 import { simulateTrackingData } from '@/utils/orderTrackingUtils';
+import WhatsAppButton from '@/components/ui/WhatsAppButton';
 
 interface EnhancedCODFlowProps {
   orderDetails: {
@@ -20,6 +21,65 @@ const EnhancedCODFlow = ({ orderDetails, onConfirm }: EnhancedCODFlowProps) => {
   const [trackingData, setTrackingData] = useState<TrackingData | null>(null);
   const [isMapVisible, setIsMapVisible] = useState(true);
   const [isConfirming, setIsConfirming] = useState(false);
+
+  // Function to generate WhatsApp message with all order details
+  const generateWhatsAppMessage = () => {
+    const customerInfo = JSON.parse(localStorage.getItem('checkoutFormData') || '{}');
+    const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+
+    // Debug logging
+    console.log('🔍 Debug - Customer Info from localStorage:', customerInfo);
+    console.log('🔍 Debug - Cart Items from localStorage:', cartItems);
+
+    let message = `🛍️ *NEW ORDER FROM GLOW24 ORGANICS*\n\n`;
+    message += `📋 *Order ID:* ${orderDetails.id}\n\n`;
+
+    // Customer Details
+    message += `👤 *CUSTOMER DETAILS:*\n`;
+    message += `Name: ${customerInfo.name || 'Not provided'}\n`;
+    message += `Email: ${customerInfo.email || 'Not provided'}\n`;
+    message += `Phone: ${customerInfo.phone || 'Not provided'}\n\n`;
+
+    // Shipping Address
+    message += `📍 *SHIPPING ADDRESS:*\n`;
+    message += `${customerInfo.address || orderDetails.shippingAddress || 'Not provided'}\n`;
+    message += `City: ${customerInfo.city || 'Not provided'}\n`;
+    message += `State: ${customerInfo.state || 'Not provided'}\n`;
+    message += `Pincode: ${customerInfo.pincode || orderDetails.pincode || 'Not provided'}\n\n`;
+
+    // Order Items
+    message += `🛒 *ORDER ITEMS:*\n`;
+    if (cartItems.length > 0) {
+      cartItems.forEach((item: any, index: number) => {
+        message += `${index + 1}. ${item.name}\n`;
+        message += `   Quantity: ${item.quantity}\n`;
+        message += `   Price: ₹${item.price}\n`;
+        message += `   Subtotal: ₹${item.price * item.quantity}\n\n`;
+      });
+    } else if (orderDetails.items) {
+      orderDetails.items.forEach((item: any, index: number) => {
+        message += `${index + 1}. ${item.name}\n`;
+        message += `   Quantity: ${item.quantity}\n`;
+        message += `   Price: ₹${item.price}\n`;
+        message += `   Subtotal: ₹${item.price * item.quantity}\n\n`;
+      });
+    }
+
+    // Order Total
+    message += `💰 *ORDER TOTAL: ₹${orderDetails.total}*\n\n`;
+
+    // Payment Method
+    message += `💳 *Payment Method:* Cash on Delivery\n\n`;
+
+    // Additional Info
+    message += `📅 *Order Date:* ${new Date().toLocaleDateString('en-IN')}\n`;
+    message += `⏰ *Order Time:* ${new Date().toLocaleTimeString('en-IN')}\n\n`;
+
+    message += `✅ *Please confirm this order and provide delivery timeline.*\n\n`;
+    message += `Thank you for choosing Glow24 Organics! 🌿`;
+
+    return encodeURIComponent(message);
+  };
   
   useEffect(() => {
     // Simulate tracking data based on order ID
@@ -178,40 +238,8 @@ const EnhancedCODFlow = ({ orderDetails, onConfirm }: EnhancedCODFlowProps) => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.4, duration: 0.5 }}
       >
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="w-full md:w-1/2">
-            <h3 className="text-white font-semibold mb-4 flex items-center">
-              <Info size={18} className="text-[#F2A83B] mr-2" />
-              Payment Information
-            </h3>
-            <div className="space-y-3">
-              <div className="bg-[#F2A83B]/10 border border-[#F2A83B]/30 rounded-lg p-3">
-                <div className="flex items-start">
-                  <Truck size={18} className="text-[#F2A83B] mt-1 mr-2 flex-shrink-0" />
-                  <div>
-                    <p className="text-white/90 text-sm font-medium">Cash on Delivery</p>
-                    <p className="text-white/70 text-sm">
-                      Pay with cash when your order is delivered. Our delivery partner will collect the payment.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white/10 rounded-lg p-3">
-                <div className="flex items-start">
-                  <CheckCircle size={18} className="text-green-400 mt-1 mr-2 flex-shrink-0" />
-                  <div>
-                    <p className="text-white/90 text-sm font-medium">Delivery Estimate</p>
-                    <p className="text-white/70 text-sm">
-                      Your order will be delivered within {calculateDeliveryDays()} days based on your location.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="w-full md:w-1/2">
+        <div className="flex justify-center">
+          <div className="w-full max-w-md">
             <h3 className="text-white font-semibold mb-4 flex items-center">
               <Phone size={18} className="text-[#F2A83B] mr-2" />
               Support Information
@@ -223,10 +251,10 @@ const EnhancedCODFlow = ({ orderDetails, onConfirm }: EnhancedCODFlowProps) => {
                   Our customer support team is available to assist you.
                 </p>
                 <div className="flex space-x-3">
-                  <a href="tel:+919876543210" className="text-xs bg-white/10 hover:bg-white/20 text-white/80 px-3 py-1 rounded-full transition-colors flex items-center">
+                  <a href="tel:+919363717744" className="text-xs bg-white/10 hover:bg-white/20 text-white/80 px-3 py-1 rounded-full transition-colors flex items-center">
                     <Phone size={12} className="mr-1" /> Call Support
                   </a>
-                  <a href="mailto:support@glow24.com" className="text-xs bg-white/10 hover:bg-white/20 text-white/80 px-3 py-1 rounded-full transition-colors">
+                  <a href="mailto:glow24@gmail.com" className="text-xs bg-white/10 hover:bg-white/20 text-white/80 px-3 py-1 rounded-full transition-colors">
                     Email Support
                   </a>
                 </div>
@@ -236,27 +264,22 @@ const EnhancedCODFlow = ({ orderDetails, onConfirm }: EnhancedCODFlowProps) => {
         </div>
       </motion.div>
       
-      {/* Confirm Button */}
+      {/* WhatsApp Submit Button */}
       <motion.div
         className="flex justify-center"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
       >
-        <button
-          onClick={handleConfirmOrder}
-          disabled={isConfirming}
-          className="bg-[#F2A83B] text-black px-8 py-3 rounded-lg font-medium hover:bg-[#F2A83B]/90 transition-colors disabled:opacity-70 flex items-center justify-center w-full md:w-auto"
+        <a
+          href={`https://wa.me/+919363717744?text=${generateWhatsAppMessage()}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg font-medium transition-colors flex items-center justify-center space-x-3 w-full md:w-auto hover:shadow-lg transform hover:scale-105 transition-all duration-200"
         >
-          {isConfirming ? (
-            <>
-              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin mr-2"></div>
-              Processing...
-            </>
-          ) : (
-            'Confirm Cash on Delivery Order'
-          )}
-        </button>
+          <MessageCircle size={24} />
+          <span className="text-lg">Submit your order to WhatsApp</span>
+        </a>
       </motion.div>
     </motion.div>
   );

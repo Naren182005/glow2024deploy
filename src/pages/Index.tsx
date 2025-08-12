@@ -4,7 +4,6 @@ import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import ProductShowcase from '@/components/ProductShowcase';
 import AboutUs from '@/components/AboutUs';
-import ContactForm from '@/components/ContactForm';
 import Footer from '@/components/Footer';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -105,9 +104,6 @@ const Index = () => {
             </div>
             <div className="section-with-bg-overlay">
               <AboutUs />
-            </div>
-            <div className="section-with-bg-overlay">
-              <ContactForm />
             </div>
           </main>
           <Footer />

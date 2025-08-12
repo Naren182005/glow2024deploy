@@ -43,9 +43,20 @@ export const useCheckoutForm = () => {
     if (!storedItems || JSON.parse(storedItems).length === 0) {
       navigate('/');
     }
-    
-    // Populate form with user profile if available
-    if (profile) {
+
+    // Load existing form data from localStorage
+    const storedFormData = localStorage.getItem('checkoutFormData');
+    if (storedFormData) {
+      try {
+        const parsedFormData = JSON.parse(storedFormData);
+        setFormValues(parsedFormData);
+      } catch (error) {
+        console.error('Error parsing stored form data:', error);
+      }
+    }
+
+    // Populate form with user profile if available (only if no stored data)
+    if (profile && !storedFormData) {
       setFormValues(prev => ({
         ...prev,
         name: profile.full_name || '',
@@ -65,12 +76,34 @@ export const useCheckoutForm = () => {
     const qualifiesForFreeShipping = isCoimbatorePin && totalAmount >= 999;
     setFreeShipping(qualifiesForFreeShipping);
   }, [formValues.pincode, totalAmount]);
-  
+
+  // Check if city is Coimbatore and switch payment method accordingly
+  useEffect(() => {
+    const isCoimbatoreCity = formValues.city?.toLowerCase().includes('coimbatore') || false;
+
+    // If city is not Coimbatore and payment method is COD, switch to UPI
+    if (!isCoimbatoreCity && formValues.paymentMethod === 'cod') {
+      setFormValues(prev => ({ ...prev, paymentMethod: 'qrcode' }));
+    }
+  }, [formValues.city, formValues.paymentMethod]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormValues(prev => ({ ...prev, [name]: value }));
+    const updatedFormValues = { ...formValues, [name]: value };
+    setFormValues(updatedFormValues);
+
+    // Save form data to localStorage whenever it changes
+    localStorage.setItem('checkoutFormData', JSON.stringify(updatedFormValues));
+    console.log('💾 Form data saved to localStorage:', updatedFormValues);
   };
-  
+
+  // Save form data to localStorage whenever formValues changes (backup method)
+  useEffect(() => {
+    if (formValues.name || formValues.email || formValues.phone || formValues.address) {
+      localStorage.setItem('checkoutFormData', JSON.stringify(formValues));
+    }
+  }, [formValues]);
+
   const validateForm = () => {
     for (const [key, value] of Object.entries(formValues)) {
       if (!value) {

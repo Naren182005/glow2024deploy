@@ -38,18 +38,9 @@ const ProductShowcase = () => {
           </h5>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Premium Organic Products</h2>
           <p className="text-white/80 max-w-2xl mx-auto">
-            Discover our carefully formulated products made with the finest organic ingredients. 
+            Discover our carefully formulated products made with the finest organic ingredients.
             Your body deserves nothing but the purest natural care.
           </p>
-          
-          <div className="mt-4">
-            <Link 
-              to="/products-table"
-              className="inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium bg-[#F2A83B]/10 text-[#F2A83B] hover:bg-[#F2A83B]/20 transition-colors"
-            >
-              View Complete Product Database
-            </Link>
-          </div>
         </div>
         
         <div className="mb-16">

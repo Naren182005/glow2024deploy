@@ -56,10 +56,32 @@ const ContactForm = () => {
               GET IN TOUCH
             </h5>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Contact Us</h2>
-            <p className="text-white/80 max-w-2xl mx-auto">
-              Have questions about our products or need personalized recommendations? 
+            <p className="text-white/80 max-w-2xl mx-auto mb-6">
+              Have questions about our products or need personalized recommendations?
               Fill out the form below and our team will reach out to you.
             </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8">
+              <a
+                href="tel:+919363717744"
+                className="flex items-center space-x-2 text-[#F2A83B] hover:text-[#F2A83B]/80 transition-colors group"
+              >
+                <div className="bg-[#F2A83B]/20 p-2 rounded-full group-hover:bg-[#F2A83B]/30 transition-colors">
+                  📞
+                </div>
+                <span className="font-medium">+91 93637 17744</span>
+              </a>
+
+              <a
+                href="mailto:glow24@gmail.com"
+                className="flex items-center space-x-2 text-[#F2A83B] hover:text-[#F2A83B]/80 transition-colors group"
+              >
+                <div className="bg-[#F2A83B]/20 p-2 rounded-full group-hover:bg-[#F2A83B]/30 transition-colors">
+                  ✉️
+                </div>
+                <span className="font-medium">glow24@gmail.com</span>
+              </a>
+            </div>
           </div>
           
           <div className="glass-card rounded-2xl p-6 md:p-8 animate-slide-up">

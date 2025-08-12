@@ -2,7 +2,18 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/hooks/useCart';
-import { submitOrder, OrderData } from '@/services/api';
+import { generateOrderId } from '@/utils/uuid';
+
+// Define OrderData interface locally since we removed the API services
+interface OrderData {
+  shippingAddress: string;
+  paymentMethod: 'qrcode' | 'cod';
+  shippingCost: number;
+  grandTotal: number;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+}
 import { 
   storeOrderInfoLocally,
   storePaymentMethod,
@@ -30,7 +41,7 @@ export const useOrderCreation = () => {
     setIsCreating(true);
 
     try {
-      const orderId = crypto.randomUUID();
+      const orderId = generateOrderId();
       
       const orderData: OrderData = {
         customerName: orderDetails.customerName || 'Guest',
@@ -79,29 +90,7 @@ export const useOrderCreation = () => {
         }
       );
       
-      try {
-        const response = await submitOrder(orderData);
-        if (response && response.orderId) {
-          storeOrderInfoLocally(
-            response.orderId,
-            {
-              address: orderDetails.shippingAddress,
-              name: orderDetails.customerName,
-              email: orderDetails.customerEmail,
-              phone: orderDetails.customerPhone
-            },
-            items,
-            totalAmount,
-            orderDetails.shippingCost,
-            orderDetails.grandTotal
-          );
-          storeOrderConfirmation();
-          return { id: response.orderId };
-        }
-      } catch (apiError) {
-        console.error('API order submission failed, using locally generated orderId:', apiError);
-      }
-      
+      // Since we're not using backend, just use the locally generated orderId
       storeOrderConfirmation();
       return { id: orderId };
     } catch (error: any) {

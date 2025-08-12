@@ -21,6 +21,7 @@ const Hero = () => {
       transition={{ duration: 0.8 }}
       className="min-h-screen flex items-center justify-center relative overflow-hidden pt-24"
     >
+
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black z-10"></div>
         
