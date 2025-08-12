@@ -8,11 +8,19 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
 // Check if Supabase is configured
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  console.warn('⚠️ Supabase not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env file');
+const isSupabaseConfigured = SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY;
+
+if (!isSupabaseConfigured) {
+  console.warn('⚠️ Supabase not configured. Authentication features will be disabled.');
 }
 
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
+// Create a safe Supabase client that won't crash if not configured
+export const supabase = isSupabaseConfigured
+  ? createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+  : createClient<Database>('https://placeholder.supabase.co', 'placeholder-key', {
+      auth: { persistSession: false },
+      realtime: { params: { eventsPerSecond: 0 } }
+    });
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+// Export configuration status for components to check
+export const isSupabaseEnabled = isSupabaseConfigured;

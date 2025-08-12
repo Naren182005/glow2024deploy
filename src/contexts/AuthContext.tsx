@@ -1,8 +1,9 @@
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, isSupabaseEnabled } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import LoadingScreen from '@/components/LoadingScreen';
 
 type AuthContextType = {
   session: Session | null;
@@ -24,6 +25,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   useEffect(() => {
+    // Skip auth initialization if Supabase is not configured
+    if (!isSupabaseEnabled) {
+      console.log('🔒 Supabase disabled - Authentication features unavailable');
+      setIsLoading(false);
+      return;
+    }
+
     // Get initial session
     const fetchInitialSession = async () => {
       try {
@@ -81,6 +89,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
+    if (!isSupabaseEnabled) {
+      toast({
+        title: "Authentication Disabled",
+        description: "Authentication features are not available. The app works without login.",
+        variant: "destructive",
+      });
+      return { error: new Error("Authentication disabled") };
+    }
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -114,6 +131,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
+    if (!isSupabaseEnabled) {
+      toast({
+        title: "Authentication Disabled",
+        description: "Authentication features are not available. The app works without login.",
+        variant: "destructive",
+      });
+      return { error: new Error("Authentication disabled") };
+    }
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -175,6 +201,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     }
   };
+
+  // Show loading screen while initializing
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <AuthContext.Provider
