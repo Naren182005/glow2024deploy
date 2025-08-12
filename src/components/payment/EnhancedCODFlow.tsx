@@ -24,61 +24,68 @@ const EnhancedCODFlow = ({ orderDetails, onConfirm }: EnhancedCODFlowProps) => {
 
   // Function to generate WhatsApp message with all order details
   const generateWhatsAppMessage = () => {
-    const customerInfo = JSON.parse(localStorage.getItem('checkoutFormData') || '{}');
-    const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+    try {
+      const customerInfo = JSON.parse(localStorage.getItem('checkoutFormData') || '{}');
+      const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
 
-    // Debug logging
-    console.log('🔍 Debug - Customer Info from localStorage:', customerInfo);
-    console.log('🔍 Debug - Cart Items from localStorage:', cartItems);
+      // Debug logging
+      console.log('🔍 Debug - Customer Info from localStorage:', customerInfo);
+      console.log('🔍 Debug - Cart Items from localStorage:', cartItems);
+      console.log('🔍 Debug - Order Details:', orderDetails);
 
-    let message = `🛍️ *NEW ORDER FROM GLOW24 ORGANICS*\n\n`;
-    message += `📋 *Order ID:* ${orderDetails.id}\n\n`;
+      let message = `🛍️ *NEW ORDER FROM GLOW24 ORGANICS*\n\n`;
+      message += `📋 *Order ID:* ${orderDetails.id || Date.now()}\n\n`;
 
-    // Customer Details
-    message += `👤 *CUSTOMER DETAILS:*\n`;
-    message += `Name: ${customerInfo.name || 'Not provided'}\n`;
-    message += `Email: ${customerInfo.email || 'Not provided'}\n`;
-    message += `Phone: ${customerInfo.phone || 'Not provided'}\n\n`;
+      // Customer Details
+      message += `👤 *CUSTOMER DETAILS:*\n`;
+      message += `Name: ${customerInfo.name || orderDetails.customerName || 'Not provided'}\n`;
+      message += `Email: ${customerInfo.email || orderDetails.customerEmail || 'Not provided'}\n`;
+      message += `Phone: ${customerInfo.phone || orderDetails.customerPhone || 'Not provided'}\n\n`;
 
-    // Shipping Address
-    message += `📍 *SHIPPING ADDRESS:*\n`;
-    message += `${customerInfo.address || orderDetails.shippingAddress || 'Not provided'}\n`;
-    message += `City: ${customerInfo.city || 'Not provided'}\n`;
-    message += `State: ${customerInfo.state || 'Not provided'}\n`;
-    message += `Pincode: ${customerInfo.pincode || orderDetails.pincode || 'Not provided'}\n\n`;
+      // Shipping Address
+      message += `📍 *SHIPPING ADDRESS:*\n`;
+      message += `${customerInfo.address || orderDetails.shippingAddress || 'Not provided'}\n`;
+      message += `City: ${customerInfo.city || 'Not provided'}\n`;
+      message += `State: ${customerInfo.state || 'Not provided'}\n`;
+      message += `Pincode: ${customerInfo.pincode || orderDetails.pincode || 'Not provided'}\n\n`;
 
-    // Order Items
-    message += `🛒 *ORDER ITEMS:*\n`;
-    if (cartItems.length > 0) {
-      cartItems.forEach((item: any, index: number) => {
-        message += `${index + 1}. ${item.name}\n`;
-        message += `   Quantity: ${item.quantity}\n`;
-        message += `   Price: ₹${item.price}\n`;
-        message += `   Subtotal: ₹${item.price * item.quantity}\n\n`;
-      });
-    } else if (orderDetails.items) {
-      orderDetails.items.forEach((item: any, index: number) => {
-        message += `${index + 1}. ${item.name}\n`;
-        message += `   Quantity: ${item.quantity}\n`;
-        message += `   Price: ₹${item.price}\n`;
-        message += `   Subtotal: ₹${item.price * item.quantity}\n\n`;
-      });
+      // Order Items
+      message += `🛒 *ORDER ITEMS:*\n`;
+      const itemsToShow = cartItems.length > 0 ? cartItems : (orderDetails.items || []);
+
+      if (itemsToShow.length > 0) {
+        itemsToShow.forEach((item: any, index: number) => {
+          message += `${index + 1}. ${item.name || 'Product'}\n`;
+          message += `   Quantity: ${item.quantity || 1}\n`;
+          message += `   Price: ₹${item.price || 0}\n`;
+          message += `   Subtotal: ₹${(item.price || 0) * (item.quantity || 1)}\n\n`;
+        });
+      } else {
+        message += `No items found\n\n`;
+      }
+
+      // Order Total
+      const total = orderDetails.total || orderDetails.grandTotal || 0;
+      message += `💰 *ORDER TOTAL: ₹${total}*\n\n`;
+
+      // Payment Method
+      message += `💳 *Payment Method:* Cash on Delivery\n\n`;
+
+      // Additional Info
+      message += `📅 *Order Date:* ${new Date().toLocaleDateString('en-IN')}\n`;
+      message += `⏰ *Order Time:* ${new Date().toLocaleTimeString('en-IN')}\n\n`;
+
+      message += `✅ *Please confirm this order and provide delivery timeline.*\n\n`;
+      message += `Thank you for choosing Glow24 Organics! 🌿`;
+
+      console.log('📱 Generated WhatsApp message:', message);
+      return encodeURIComponent(message);
+    } catch (error) {
+      console.error('❌ Error generating WhatsApp message:', error);
+      // Fallback message
+      const fallbackMessage = `🛍️ *NEW ORDER FROM GLOW24 ORGANICS*\n\nOrder ID: ${Date.now()}\nTotal: ₹${orderDetails.total || 0}\nPayment: Cash on Delivery\n\nPlease confirm this order. Thank you! 🌿`;
+      return encodeURIComponent(fallbackMessage);
     }
-
-    // Order Total
-    message += `💰 *ORDER TOTAL: ₹${orderDetails.total}*\n\n`;
-
-    // Payment Method
-    message += `💳 *Payment Method:* Cash on Delivery\n\n`;
-
-    // Additional Info
-    message += `📅 *Order Date:* ${new Date().toLocaleDateString('en-IN')}\n`;
-    message += `⏰ *Order Time:* ${new Date().toLocaleTimeString('en-IN')}\n\n`;
-
-    message += `✅ *Please confirm this order and provide delivery timeline.*\n\n`;
-    message += `Thank you for choosing Glow24 Organics! 🌿`;
-
-    return encodeURIComponent(message);
   };
   
   useEffect(() => {

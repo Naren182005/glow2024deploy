@@ -20,6 +20,7 @@ import LipCare from "./pages/LipCare";
 import ProductsTable from "./pages/ProductsTable";
 import Auth from "./pages/Auth";
 import Account from "./pages/Account";
+import PaymentTest from "./pages/PaymentTest";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/products-table" element={<ProductsTable />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/account" element={<Account />} />
+              <Route path="/payment-test" element={<PaymentTest />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
